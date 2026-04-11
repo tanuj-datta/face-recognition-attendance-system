@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Face Recognition attendance system
 
-## Getting Started
+A modern, automated attendance tracking solution built with Next.js, utilizing facial recognition technology to streamline student attendance processes for educational institutions.
 
-First, run the development server:
+## 🌟 Overview
+
+The **Automated Face Recognition Attendance System** is designed to eliminate the manual effort and potential inaccuracies of traditional roll-call methods. By leveraging browser-based facial recognition, the system identifies students in real-time and logs their attendance directly into a secure database. It provides distinct portals for students and faculty, ensuring a seamless experience for all users.
+
+## 🚀 Features
+
+- **Facial Recognition**: Real-time identification using `face-api.js`.
+- **Role-Based Access**: Specialized dashboards for Students and Faculty (Teachers/Admins).
+- **Student Portal**: View personalized attendance history and profile.
+- **Faculty Dashboard**: Manage courses, students, and manually override attendance if necessary.
+- **Secure Authentication**: Protected routes and encrypted passwords using `NextAuth.js` and `bcrypt`.
+- **Responsive Design**: Polished UI built with modern CSS and React.
+
+## 🛠️ Technical Stack
+
+- **Framework**: [Next.js](https://nextjs.org/) (App Router)
+- **Frontend**: React, Vanilla CSS
+- **Database**: SQLite (via Prisma ORM)
+- **Facial Recognition**: [face-api.js](https://github.com/justadudewhohacks/face-api.js/)
+- **Authentication**: [NextAuth.js](https://next-auth.js.org/)
+- **Language**: JavaScript
+
+---
+
+## 💻 Getting Started
+
+Follow these instructions to set up the project on your local machine.
+
+### Prerequisites
+
+- **Node.js**: Version 18.x or higher
+- **npm**: Version 9.x or higher
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/tanuj-datta/face-recognition-attendance-system.git
+cd face-recognition-attendance-system
+```
+
+### 2. Install Dependencies
+
+Install all necessary libraries and packages:
+
+```bash
+npm install
+```
+
+### 3. Environment Variables
+
+Create a `.env` file in the root directory and add your configurations. You can use the following template:
+
+```env
+DATABASE_URL="file:./dev.db"
+NEXTAUTH_SECRET="your_secret_key_here"
+NEXTAUTH_URL="http://localhost:3000"
+```
+
+### 4. Database Setup
+
+Initialize the SQLite database and generate the Prisma client:
+
+```bash
+npx prisma migrate dev --name init
+npx prisma generate
+```
+
+### 5. Run the Application
+
+Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser to see the application in action.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📂 Project Structure
 
-## Learn More
+- `/app`: Next.js application routes and pages.
+- `/components`: Reusable UI components.
+- `/prisma`: Database schema and migrations.
+- `/public`: Static assets (models for face-api, images).
+- `/lib`: Utility functions and database client.
 
-To learn more about Next.js, take a look at the following resources:
+## 🛡️ License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is licensed under the MIT License.
