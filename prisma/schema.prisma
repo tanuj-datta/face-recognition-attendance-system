@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            String   @id @default(uuid())
+  username      String   @unique
+  password_hash String
+  role          String   @default("teacher") // admin or teacher
+  name          String
+  department    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Course {
+  id          String   @id @default(uuid())
+  course_name String
+  department  String
+  semester    Int
+  students    Student[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Student {
+  id             String       @id @default(uuid())
+  name           String
+  roll_no        String       @unique
+  password_hash  String?
+  course_id      String
+  course         Course       @relation(fields: [course_id], references: [id])
+  face_embedding String?      // Storing array of vectors as JSON string
+  image_path     String?
+  attendances    Attendance[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Attendance {
+  id           String   @id @default(uuid())
+  student_id   String
+  student      Student  @relation(fields: [student_id], references: [id])
+  timestamp    DateTime @default(now())
+  subject_name String
+  status       String   @default("Present")
+}
