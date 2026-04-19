@@ -35,10 +35,11 @@ export default function Login() {
 
         <form onSubmit={handleLogin} className={styles.formGroup}>
           <input 
-            type="text" 
-            placeholder="Roll Number" 
+            type="number" 
+            placeholder="Reg / Roll Number" 
             className={styles.input}
             required
+            inputMode="numeric"
             value={formData.roll_no}
             onChange={(e) => setFormData({...formData, roll_no: e.target.value})}
           />

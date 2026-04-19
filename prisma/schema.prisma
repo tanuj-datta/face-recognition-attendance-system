@@ -11,7 +11,7 @@ model User {
   id            String   @id @default(uuid())
   username      String   @unique
   password_hash String
-  role          String   @default("teacher") // admin or teacher
+  role          String   @default("faculty") // faculty or student
   name          String
   department    String?
   createdAt     DateTime @default(now())
@@ -19,13 +19,14 @@ model User {
 }
 
 model Course {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   course_name String
   department  String
   semester    Int
   students    Student[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  marks       Mark[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model Student {
@@ -38,15 +39,64 @@ model Student {
   face_embedding String?      // Storing array of vectors as JSON string
   image_path     String?
   attendances    Attendance[]
+  marks          Mark[]
+  justifications Justification[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+}
+
+model Timetable {
+  id          String   @id @default(uuid())
+  day         String   // Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
+  slot1       String?  // Subject Name
+  slot2       String?
+  slot3       String?
+  slot4       String?
+  slot5       String?
+  slot6       String?
+  slot7       String?
+  slot7_start String?
+  slot7_end   String?
+  course_id   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([course_id, day])
 }
 
 model Attendance {
   id           String   @id @default(uuid())
   student_id   String
-  student      Student  @relation(fields: [student_id], references: [id])
+  student      Student  @relation(fields: [student_id], references: [id], onDelete: Cascade)
   timestamp    DateTime @default(now())
   subject_name String
-  status       String   @default("Present")
+  status       String   @default("Present") // Present, Absent, Late
+  method       String   @default("Face")    // Only Face recognition now
+  slot_index   Int      // 1-7
+  date         String   // YYYY-MM-DD for easy filtering
+}
+
+model Mark {
+  id          String   @id @default(uuid())
+  student_id  String
+  student     Student  @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  course_id   String
+  course      Course   @relation(fields: [course_id], references: [id])
+  label       String   // e.g., "Midterm", "Assignment 1"
+  score       Float
+  total_marks Float    @default(100)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([student_id, label])
+}
+
+model Justification {
+  id         String   @id @default(uuid())
+  student_id String
+  student    Student  @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  subject    String
+  content    String   // Drafted email content
+  status     String   @default("Draft") // Draft, Sent, Approved, Rejected
+  createdAt  DateTime @default(now())
 }

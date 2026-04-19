@@ -30,7 +30,7 @@ export default function FacultyLogin() {
   return (
     <div className={styles.container}>
       <div className={`glass-panel ${styles.registrationCard}`} style={{ maxWidth: '400px' }}>
-        <h2 className={styles.title} style={{ background: 'linear-gradient(to right, #ec4899, #f43f5e)', webkitBackgroundClip: 'text', webkitTextFillColor: 'transparent' }}>Faculty Login</h2>
+        <h2 className={styles.title} style={{ background: 'linear-gradient(to right, #ec4899, #f43f5e)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Faculty Login</h2>
         <p className={styles.status}>{error || 'Sign in to manage attendance'}</p>
 
         <form onSubmit={handleLogin} className={styles.formGroup}>

@@ -4,11 +4,13 @@ import { PrismaClient } from "@prisma/client";
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import DownloadExcelButton from '../../../../components/DownloadExcelButton';
+import DeleteStudentButton from '../../../../components/DeleteStudentButton';
 import styles from '../../../../student/register/page.module.css';
+import { Calendar as CalendarIcon, Clock, CheckCircle2, XCircle, ArrowLeft, Save } from 'lucide-react';
+import { TIME_SLOTS } from '../../../../../lib/timeSlots';
 
-const globalForPrisma = global;
-const prisma = globalForPrisma.prisma || new PrismaClient();
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+const prisma = new PrismaClient();
 
 export default async function FacultyStudentView({ params, searchParams }) {
   const session = await getServerSession(authOptions);
@@ -18,144 +20,199 @@ export default async function FacultyStudentView({ params, searchParams }) {
   }
 
   const { studentId } = await params;
-  const { modified } = await searchParams;
-  const isModified = modified === 'true';
-
+  const { date: selectedDateStr } = await searchParams;
+  
   const studentData = await prisma.student.findUnique({
     where: { id: studentId },
-    include: { attendances: true }
+    include: { 
+      course: true,
+      attendances: true 
+    }
   });
 
-  if (!studentData) {
-    return <div style={{ color: 'white', padding: '2rem' }}>Student not found.</div>;
-  }
+  if (!studentData) return <div style={{ color: 'white', padding: '2rem' }}>Student not found.</div>;
 
-  // Server Action: Toggle Attendance
-  async function toggleDay(formData) {
+  const today = new Date();
+  const selectedDate = selectedDateStr ? new Date(selectedDateStr) : today;
+  const formattedSelectedDate = selectedDate.toISOString().split('T')[0];
+  
+  // Get day of week for timetable
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const dayName = days[selectedDate.getDay()];
+
+  // Get Timetable dynamically to support Slot 7 even with stale Client
+  const rawTimetables = await prisma.$queryRawUnsafe(
+    `SELECT * FROM Timetable WHERE course_id = ? AND day = ?`,
+    studentData.course_id, dayName
+  );
+  const timetable = rawTimetables?.[0] || null;
+
+  const dayAttendances = studentData.attendances.filter(a => a.date === formattedSelectedDate);
+
+  // Server Action: Toggle Slot Attendance
+  async function toggleSlot(formData) {
     'use server';
-    const day = parseInt(formData.get('day'));
-    const isCurrentlyPresent = formData.get('isPresent') === 'true';
     const sId = formData.get('studentId');
+    const slotIdx = parseInt(formData.get('slotIndex'));
+    const date = formData.get('date');
+    const subject = formData.get('subject');
+    const isCurrentlyPresent = formData.get('isPresent') === 'true';
 
-    const today = new Date();
-    const targetDateStart = new Date(today.getFullYear(), today.getMonth(), day, 0, 0, 0);
-    const targetDateEnd = new Date(today.getFullYear(), today.getMonth(), day, 23, 59, 59);
+    const prismaAction = new PrismaClient();
 
     if (isCurrentlyPresent) {
-      await prisma.attendance.deleteMany({
-        where: {
-          student_id: sId,
-          timestamp: { gte: targetDateStart, lte: targetDateEnd }
-        }
+      await prismaAction.attendance.deleteMany({
+        where: { student_id: sId, date: date, slot_index: slotIdx }
       });
     } else {
-      const manualTime = new Date(today.getFullYear(), today.getMonth(), day, 12, 0, 0);
-      await prisma.attendance.create({
+      await prismaAction.attendance.create({
         data: {
           student_id: sId,
-          status: 'Present',
-          subject_name: 'Manual Faculty Override',
-          timestamp: manualTime
+          slot_index: slotIdx,
+          date: date,
+          subject_name: subject,
+          status: 'Present'
         }
       });
     }
 
     revalidatePath(`/faculty/dashboard/student/${sId}`);
-    redirect(`/faculty/dashboard/student/${sId}?modified=true`);
   }
 
-  // Generate an array for the current month representation
-  const attendances = studentData.attendances || [];
-  const presentDays = new Set(
-    attendances
-      .filter(a => a.status === 'Present')
-      .map(a => new Date(a.timestamp).getDate())
-  );
-
-  const today = new Date();
+  // Monthly Calendar Logic
   const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-
   const calendarDays = [];
+  const presenceMap = new Set(studentData.attendances.map(a => a.date));
+
   for (let i = 1; i <= daysInMonth; i++) {
-    const isPresent = presentDays.has(i);
-    const isFuture = i > today.getDate();
-    calendarDays.push({ day: i, isPresent, isFuture });
+    const d = new Date(today.getFullYear(), today.getMonth(), i);
+    const dStr = d.toISOString().split('T')[0];
+    calendarDays.push({
+      day: i,
+      fullDate: dStr,
+      hasPresence: presenceMap.has(dStr),
+      isSelected: dStr === formattedSelectedDate,
+      isFuture: d > today
+    });
   }
 
   return (
-    <div className={styles.container} style={{ flexDirection: 'column', alignItems: 'center' }}>
-      
-      <div style={{ width: '100%', maxWidth: '800px', marginBottom: '1rem' }}>
-        <Link href="/faculty/dashboard" className="btn btn-primary" style={{ textDecoration: 'none', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)' }}>
-          ← Back to Faculty Roster
+    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <Link href="/faculty/dashboard" style={{ color: 'var(--text-muted)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <ArrowLeft size={18} /> Student Roster
         </Link>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <DownloadExcelButton studentName={studentData.name} attendances={studentData.attendances} />
+          <DeleteStudentButton studentId={studentData.id} studentName={studentData.name} />
+        </div>
       </div>
 
-      <div className={`glass-panel ${styles.registrationCard}`} style={{ maxWidth: '800px', width: '100%', border: isModified ? '1px solid var(--success)' : '1px solid #f43f5e' }}>
-        <h2 className={styles.title} style={{ marginBottom: '0.5rem' }}>Manual Attendance Editor</h2>
-        <h3 style={{ color: 'white', textAlign: 'center', marginBottom: '1rem' }}>Managing: {studentData.name} ({studentData.roll_no})</h3>
-        
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <span style={{ color: isModified ? 'var(--success)' : 'white', fontSize: '1.2rem', fontWeight: 'bold' }}>
-            Current Total Presents: {presentDays.size}
-          </span>
-          <p style={{ color: isModified ? 'var(--success)' : '#94a3b8', marginTop: '0.5rem' }}>
-            {isModified ? '✓ Changes detected! Review and click Save below.' : 'Click on any day to toggle status. Changes are saved instantly.'}
-          </p>
+      <div className="dashboard-grid" style={{ gridTemplateColumns: '1fr 400px', gap: '2rem', alignItems: 'start' }}>
+        {/* Left: Slot Detail View */}
+        <div className="glass-panel animate-fade-in" style={{ padding: '2.5rem' }}>
+          <div style={{ marginBottom: '2rem' }}>
+             <h2 style={{ fontSize: '1.8rem', fontWeight: '800', marginBottom: '0.5rem' }}>{studentData.name}</h2>
+             <p style={{ color: 'var(--text-muted)' }}>{studentData.roll_no} • {studentData.course.course_name}</p>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '2rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '1rem' }}>
+             <CalendarIcon size={20} color="var(--primary)" />
+             <h3 style={{ fontSize: '1.2rem' }}>Check-ins for {selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</h3>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {TIME_SLOTS.map(slot => {
+              const subject = timetable?.[`slot${slot.index}`];
+              const attendance = dayAttendances.find(a => a.slot_index === slot.index);
+              
+              return (
+                <div key={slot.index} className="glass-panel" style={{ padding: '1.2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: subject ? 'rgba(255,255,255,0.02)' : 'transparent', opacity: subject ? 1 : 0.5 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <div style={{ textAlign: 'center', width: '60px' }}>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>{slot.label}</div>
+                      <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>{slot.start}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: '700', fontSize: '1rem' }}>{subject || 'No Slot Scheduled'}</div>
+                      <div style={{ fontSize: '0.75rem', color: attendance ? 'var(--success)' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        {attendance ? <CheckCircle2 size={12} /> : <Clock size={12} />}
+                        {attendance ? 'Recorded' : 'Not Marked'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {subject && (
+                    <form action={toggleSlot}>
+                      <input type="hidden" name="studentId" value={studentData.id} />
+                      <input type="hidden" name="slotIndex" value={slot.index} />
+                      <input type="hidden" name="date" value={formattedSelectedDate} />
+                      <input type="hidden" name="subject" value={subject} />
+                      <input type="hidden" name="isPresent" value={attendance ? 'true' : 'false'} />
+                      
+                      <button type="submit" className="glass-button" style={{ 
+                        background: attendance ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                        color: attendance ? 'var(--danger)' : 'var(--success)',
+                        border: attendance ? '1px solid var(--danger)' : '1px solid var(--success)',
+                        fontSize: '0.75rem',
+                        padding: '6px 12px'
+                      }}>
+                        Mark as {attendance ? 'Absent' : 'Present'}
+                      </button>
+                    </form>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        <div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '10px' }}>
-            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
-              <div key={d} style={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>{d}</div>
+        {/* Right: Selection Calendar */}
+        <div className="glass-panel animate-fade-in" style={{ padding: '2rem', animationDelay: '0.1s' }}>
+          <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem' }}>Select Date</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px' }}>
+            {['S','M','T','W','T','F','S'].map(d => (
+              <div key={d} style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 'bold', textAlign: 'center', marginBottom: '10px' }}>{d}</div>
             ))}
             
-            {/* Offset for Weekday Alignment */}
             {Array.from({ length: new Date(today.getFullYear(), today.getMonth(), 1).getDay() }).map((_, i) => (
               <div key={`empty-${i}`} />
             ))}
 
             {calendarDays.map((d) => (
-              <form key={d.day} action={toggleDay}>
-                <input type="hidden" name="day" value={d.day} />
-                <input type="hidden" name="isPresent" value={d.isPresent ? 'true' : 'false'} />
-                <input type="hidden" name="studentId" value={studentData.id} />
-                
-                <button 
-                  type="submit"
-                  disabled={d.isFuture}
-                  style={{
-                    width: '100%',
-                    padding: '1rem 0',
-                    textAlign: 'center',
-                    borderRadius: '8px',
-                    background: d.isPresent ? 'rgba(16, 185, 129, 0.2)' : d.isFuture ? 'rgba(255,255,255,0.05)' : 'rgba(239, 68, 68, 0.2)',
-                    border: d.isPresent ? '1px solid var(--success)' : d.isFuture ? '1px solid rgba(255,255,255,0.1)' : '1px solid var(--danger)',
-                    color: d.isFuture ? 'rgba(255,255,255,0.3)' : 'white',
-                    fontWeight: 'bold',
-                    cursor: d.isFuture ? 'not-allowed' : 'pointer',
-                    transition: '0.2s ease-in-out'
-                  }}
-                >
-                  {d.day}
-                </button>
-              </form>
+              <Link 
+                key={d.day} 
+                href={`?date=${d.fullDate}`}
+                style={{
+                  width: '100%',
+                  aspectRatio: '1',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '10px',
+                  background: d.isSelected ? 'var(--primary)' : 'rgba(255,255,255,0.03)',
+                  border: d.hasPresence ? `1px solid ${d.isSelected ? 'white' : 'var(--success)'}` : '1px solid transparent',
+                  color: d.isFuture ? 'rgba(255,255,255,0.2)' : 'white',
+                  fontSize: '0.85rem',
+                  fontWeight: d.isSelected ? 'bold' : 'normal',
+                  textDecoration: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                {d.day}
+              </Link>
             ))}
           </div>
+          
+          <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                <div style={{ width: '12px', height: '12px', background: 'var(--primary)', borderRadius: '3px' }}></div> Selected Date
+             </div>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                <div style={{ width: '12px', height: '12px', border: '1px solid var(--success)', borderRadius: '3px' }}></div> Presence Recorded
+             </div>
+          </div>
         </div>
-
-        <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center' }}>
-          {isModified ? (
-            <Link href="/faculty/dashboard" className="btn btn-primary" style={{ padding: '1rem 3rem', textDecoration: 'none', background: 'var(--success)', border: 'none', animation: 'pulse 1.5s infinite' }}>
-              Save & Finish Editing
-            </Link>
-          ) : (
-            <button className="btn btn-primary" disabled style={{ padding: '1rem 3rem', textDecoration: 'none', background: 'rgba(255,255,255,0.1)', border: 'none', cursor: 'not-allowed', color: 'rgba(255,255,255,0.3)' }}>
-              Save & Finish (No Changes)
-            </button>
-          )}
-        </div>
-
       </div>
     </div>
   );

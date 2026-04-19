@@ -12,24 +12,42 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
     }
 
+    // Explicit check for existing student with same roll_no
+    const existingStudent = await prisma.student.findUnique({
+      where: { roll_no }
+    });
+
+    if (existingStudent) {
+      return new Response(JSON.stringify({ error: "This Roll Number is already registered." }), { status: 409 });
+    }
+
     // Since we are using SQLite, we stringify the embedding array
     const embeddingString = JSON.stringify(face_embedding);
 
-    const courseName = course_id === 'default' ? 'General Subject' : course_id;
-    
-    // Check if course exists in DB, or create it dynamically to fulfill the Foreign Key Constraint
-    let course = await prisma.course.findFirst({
-      where: { course_name: courseName }
-    });
+    let finalCourseId = course_id;
 
-    if (!course) {
-      course = await prisma.course.create({
-        data: {
-          course_name: courseName,
-          department: "School of Engineering",
-          semester: 1
-        }
-      });
+    // Validate course_id or handle 'default'
+    if (course_id === 'default' || !course_id) {
+       let defaultCourse = await prisma.course.findFirst({
+         where: { course_name: 'General Subject' }
+       });
+       
+       if (!defaultCourse) {
+         defaultCourse = await prisma.course.create({
+           data: {
+             course_name: 'General Subject',
+             department: "General",
+             semester: 1
+           }
+         });
+       }
+       finalCourseId = defaultCourse.id;
+    } else {
+      // Verify the course exists
+      const exists = await prisma.course.findUnique({ where: { id: course_id } });
+      if (!exists) {
+        return new Response(JSON.stringify({ error: "Invalid Course selection." }), { status: 400 });
+      }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -40,7 +58,7 @@ export async function POST(req) {
         name,
         roll_no,
         password_hash: hashedPassword,
-        course_id: course.id,
+        course_id: finalCourseId,
         face_embedding: embeddingString,
       }
     });
