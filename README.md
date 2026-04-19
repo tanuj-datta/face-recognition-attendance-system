@@ -89,7 +89,7 @@ Follow these steps to deploy the project on your local environment.
 
 2. **Initialize Database Client**
    ```bash
-   npx prisma generate
+   npm exec prisma generate
    ```
 
 3. **Run the Development Server**
