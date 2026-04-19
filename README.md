@@ -82,45 +82,26 @@ Follow these steps to deploy the project on your local environment.
 
 ### 🔧 Step-by-Step Setup
 
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/tanuj-datta/face-recognition-attendance-system.git
-   cd face-recognition-attendance-system
-   ```
-
-2. **Install Dependencies**
+1. **Install Dependencies**
    ```bash
    npm install
    ```
 
-3. **Configure Environment Variables**
-   Create a `.env` file in the root directory:
-   ```env
-   DATABASE_URL="file:./dev.db"
-   NEXTAUTH_SECRET="your_custom_secret_key_here"
-   NEXTAUTH_URL="http://localhost:3000"
-   ```
-
-4. **Initialize the Database**
-   Run the Prisma migrations to set up your SQLite database schema:
+2. **Initialize Database Client**
    ```bash
-   npx prisma migrate dev --name init
    npx prisma generate
    ```
 
-5. **Verify AI Models**
-   Ensure that the `public/models` directory contains the necessary weights for `face-api.js`:
-   - `ssd_mobilenetv1_model-weights_manifest.json`
-   - `face_landmark_68_model-weights_manifest.json`
-   - `face_recognition_model-weights_manifest.json`
-
-6. **Run the Development Server**
+3. **Run the Development Server**
    ```bash
    npm run dev
    ```
 
-7. **Access the App**
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
+---
+
+### 🌐 Accessing the App
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
 
 ---
 
