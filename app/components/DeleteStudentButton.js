@@ -14,7 +14,7 @@ export default function DeleteStudentButton({ studentId, studentName }) {
     setIsDeleting(true);
     const result = await deleteStudent(studentId);
     if (result.success) {
-      router.push('/faculty/dashboard');
+      router.push('/admin/dashboard');
       router.refresh();
     } else {
       alert("Error deleting student: " + result.error);

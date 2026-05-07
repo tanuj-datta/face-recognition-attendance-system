@@ -18,7 +18,7 @@ export default function DraftJustification() {
     // Generate a draft based on the slot
     const date = new Date().toLocaleDateString();
     const emailSubject = `Absence Justification - Slot ${slotIndex} - ${date}`;
-    const emailBody = `Respected Faculty,\n\nI am writing to justify my absence during Slot ${slotIndex} on ${date}. Unfortunately, I missed the attendance marking window due to [Reason: medical/technical issue].\n\nI request you to kindly consider my attendance for this session. I have completed the course materials for the day.\n\nThank you.\n\nBest regards,\n[Your Name]\n[Your Roll Number]`;
+    const emailBody = `Respected Admin,\n\nI am writing to justify my absence during Slot ${slotIndex} on ${date}. Unfortunately, I missed the attendance marking window due to [Reason: medical/technical issue].\n\nI request you to kindly consider my attendance for this session. I have completed the course materials for the day.\n\nThank you.\n\nBest regards,\n[Your Name]\n[Your Roll Number]`;
     
     setDraft({ subject: emailSubject, body: emailBody });
   }, [slotIndex]);
@@ -59,7 +59,7 @@ export default function DraftJustification() {
           <button className="glass-button" style={{ flex: 1, justifyContent: 'center' }} onClick={handleCopy}>
             {copied ? <Check size={18} /> : <Copy size={18} />} {copied ? 'Copied to Clipboard' : 'Copy Content'}
           </button>
-          <a href={`mailto:faculty@university.edu?subject=${encodeURIComponent(draft.subject)}&body=${encodeURIComponent(draft.body)}`} className="glass-button" style={{ background: 'var(--secondary)', flex: 1, justifyContent: 'center' }}>
+          <a href={`mailto:admin@university.edu?subject=${encodeURIComponent(draft.subject)}&body=${encodeURIComponent(draft.body)}`} className="glass-button" style={{ background: 'var(--secondary)', flex: 1, justifyContent: 'center' }}>
             <Send size={18} /> Open in Mail App
           </a>
         </div>

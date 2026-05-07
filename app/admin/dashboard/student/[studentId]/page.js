@@ -15,8 +15,8 @@ const prisma = new PrismaClient();
 export default async function FacultyStudentView({ params, searchParams }) {
   const session = await getServerSession(authOptions);
   
-  if (!session || session.user.role !== 'faculty') {
-    redirect('/faculty/login');
+  if (!session || session.user.role !== 'admin') {
+    redirect('/admin/login');
   }
 
   const { studentId } = await params;
@@ -34,7 +34,10 @@ export default async function FacultyStudentView({ params, searchParams }) {
 
   const today = new Date();
   const selectedDate = selectedDateStr ? new Date(selectedDateStr) : today;
-  const formattedSelectedDate = selectedDate.toISOString().split('T')[0];
+  const year = selectedDate.getFullYear();
+  const month = (selectedDate.getMonth() + 1).toString().padStart(2, '0');
+  const day = selectedDate.getDate().toString().padStart(2, '0');
+  const formattedSelectedDate = `${year}-${month}-${day}`;
   
   // Get day of week for timetable
   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -76,7 +79,7 @@ export default async function FacultyStudentView({ params, searchParams }) {
       });
     }
 
-    revalidatePath(`/faculty/dashboard/student/${sId}`);
+    revalidatePath(`/admin/dashboard/student/${sId}`);
   }
 
   // Monthly Calendar Logic
@@ -86,7 +89,7 @@ export default async function FacultyStudentView({ params, searchParams }) {
 
   for (let i = 1; i <= daysInMonth; i++) {
     const d = new Date(today.getFullYear(), today.getMonth(), i);
-    const dStr = d.toISOString().split('T')[0];
+    const dStr = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
     calendarDays.push({
       day: i,
       fullDate: dStr,
@@ -99,7 +102,7 @@ export default async function FacultyStudentView({ params, searchParams }) {
   return (
     <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <Link href="/faculty/dashboard" style={{ color: 'var(--text-muted)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <Link href="/admin/dashboard" style={{ color: 'var(--text-muted)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <ArrowLeft size={18} /> Student Roster
         </Link>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>

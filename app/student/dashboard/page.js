@@ -43,8 +43,15 @@ export default async function StudentDashboard({ searchParams }) {
   const { date: selectedDateStr } = await searchParams;
   const today = new Date();
   const selectedDate = selectedDateStr ? new Date(selectedDateStr) : today;
-  const formattedDate = selectedDate.toISOString().split('T')[0];
-  const isToday = formattedDate === today.toISOString().split('T')[0];
+  const year = selectedDate.getFullYear();
+  const month = (selectedDate.getMonth() + 1).toString().padStart(2, '0');
+  const day = selectedDate.getDate().toString().padStart(2, '0');
+  const formattedDate = `${year}-${month}-${day}`;
+  
+  const todayYear = today.getFullYear();
+  const todayMonth = (today.getMonth() + 1).toString().padStart(2, '0');
+  const todayDay = today.getDate().toString().padStart(2, '0');
+  const isToday = formattedDate === `${todayYear}-${todayMonth}-${todayDay}`;
 
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const activeDay = dayNames[selectedDate.getDay()];

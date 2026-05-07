@@ -6,15 +6,15 @@ A state-of-the-art, AI-powered attendance management solution built with Next.js
 
 ## 📽️ Project Flow
 
-The system operates through a synchronized workflow between Students, Faculty, and the AI Engine.
+The system operates through a synchronized workflow between Students, Admin, and the AI Engine.
 
 ### 1. Student Onboarding & Registration
 - Students register their profiles and provide high-quality facial captures.
 - The system extracts unique **Facial Descriptors** (embeddings) from these images using `face-api.js`.
 - These descriptors are stored securely in the database, associated with the student's Roll Number.
 
-### 2. Faculty Management
-- Faculty members manage the **Dynamic Timetable**, defining slots for courses each day.
+### 2. Admin Management
+- Admin members manage the **Dynamic Timetable**, defining slots for courses each day.
 - They can initiate a "Session" for a specific class or let the system automatically validate attendance based on the current time and slot.
 
 ### 3. Real-Time Attendance Marking
@@ -25,20 +25,20 @@ The system operates through a synchronized workflow between Students, Faculty, a
 
 ### 4. Absence Justification & Analytics
 - Students can view their attendance history and submit **Justifications** for missed classes.
-- Faculty can review justifications, manually override statuses, and generate comprehensive **Analytics Dashboards** and **Excel Reports**.
+- Admin can review justifications, manually override statuses, and generate comprehensive **Analytics Dashboards** and **Excel Reports**.
 
 #### 🔄 System Flow Diagram
 ```mermaid
 graph TD
     A[Student Registration] --> B[Face Capture & Encoding]
     B --> C[(Secure Database)]
-    D[Faculty Sets Timetable] --> E[Active Class Session]
+    D[Admin Sets Timetable] --> E[Active Class Session]
     F[Student Attendance Portal] --> G[Live Face Scanning]
     G --> H{AI Matching Engine}
     C --> H
     H -- Match Found --> I[Log Attendance]
     H -- No Match --> J[Access Denied]
-    I --> K[Faculty Dashboard / Reports]
+    I --> K[Admin Dashboard / Reports]
 ```
 
 ---
@@ -67,7 +67,7 @@ graph TD
 ### **4. Security & Authentication**
 - **NextAuth.js**: Comprehensive authentication solution for Next.js.
 - **Bcrypt**: For industry-standard password hashing and security.
-- **Role-Based Access Control (RBAC)**: Distinct permissions and views for Students and Faculty.
+- **Role-Based Access Control (RBAC)**: Distinct permissions and views for Students and Admin.
 
 ---
 
@@ -107,7 +107,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 📈 Key Features
 - ✅ **Touchless Attendance**: Automated marking with 99%+ accuracy.
-- ✅ **Dynamic Scheduling**: Flexible timetable management for faculty.
+- ✅ **Dynamic Scheduling**: Flexible timetable management for admin.
 - ✅ **AI Justifications**: Intelligent handling of student absence requests.
 - ✅ **Detailed Reporting**: Exportable attendance data for administrative use.
 - ✅ **Responsive UI**: Optimized for both desktop and tablet use for ease of use in classrooms.

@@ -11,8 +11,8 @@ const prisma = new PrismaClient();
 export default async function FacultyMarks() {
   const session = await getServerSession(authOptions);
 
-  if (!session || session.user.role !== 'faculty') {
-    redirect('/faculty/login');
+  if (!session || session.user.role !== 'admin') {
+    redirect('/admin/login');
   }
 
   const students = await prisma.student.findMany({
@@ -26,7 +26,7 @@ export default async function FacultyMarks() {
 
   return (
     <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto' }}>
-      <Link href="/faculty/dashboard" style={{ color: 'var(--text-muted)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2rem' }}>
+      <Link href="/admin/dashboard" style={{ color: 'var(--text-muted)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2rem' }}>
         <ArrowLeft size={16} /> Back to Command Center
       </Link>
 

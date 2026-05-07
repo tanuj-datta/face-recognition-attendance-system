@@ -16,8 +16,8 @@ const prisma = new PrismaClient();
 export default async function ManageTimetable({ searchParams }) {
   const session = await getServerSession(authOptions);
 
-  if (!session || session.user.role !== 'faculty') {
-    redirect('/faculty/login');
+  if (!session || session.user.role !== 'admin') {
+    redirect('/admin/login');
   }
 
   const courses = await prisma.course.findMany({
@@ -87,7 +87,7 @@ export default async function ManageTimetable({ searchParams }) {
       throw new Error("Failed to update schedule.");
     }
     
-    revalidatePath('/faculty/timetable');
+    revalidatePath('/admin/timetable');
     revalidatePath('/student/dashboard');
   }
 
@@ -95,7 +95,7 @@ export default async function ManageTimetable({ searchParams }) {
     <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
         <div>
-          <Link href="/faculty/dashboard" style={{ color: 'var(--text-muted)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem' }}>
+          <Link href="/admin/dashboard" style={{ color: 'var(--text-muted)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem' }}>
             <ArrowLeft size={16} /> Dashboard
           </Link>
           <h1 style={{ fontSize: '2.5rem', fontWeight: '800' }}>Slot Management</h1>

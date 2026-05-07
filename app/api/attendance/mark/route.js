@@ -82,7 +82,11 @@ export async function POST(req) {
     }
 
     // 5. Check if already marked
-    const todayDate = new Date().toISOString().split('T')[0];
+    const nowLocalDate = new Date();
+    const year = nowLocalDate.getFullYear();
+    const month = (nowLocalDate.getMonth() + 1).toString().padStart(2, '0');
+    const day = nowLocalDate.getDate().toString().padStart(2, '0');
+    const todayDate = `${year}-${month}-${day}`;
     const existing = await prisma.attendance.findFirst({
       where: {
         student_id: student.id,

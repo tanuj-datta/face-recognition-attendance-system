@@ -17,26 +17,26 @@ export default function FacultyLogin() {
       redirect: false,
       identifier: formData.username,
       password: formData.password,
-      isFaculty: 'true'
+      isAdmin: 'true'
     });
 
     if (result?.error) {
-      setError('Invalid Faculty Credentials');
+      setError('Invalid Admin Credentials');
     } else {
-      router.push('/faculty/dashboard');
+      router.push('/admin/dashboard');
     }
   };
 
   return (
     <div className={styles.container}>
       <div className={`glass-panel ${styles.registrationCard}`} style={{ maxWidth: '400px' }}>
-        <h2 className={styles.title} style={{ background: 'linear-gradient(to right, #ec4899, #f43f5e)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Faculty Login</h2>
+        <h2 className={styles.title} style={{ background: 'linear-gradient(to right, #ec4899, #f43f5e)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Admin Console Login</h2>
         <p className={styles.status}>{error || 'Sign in to manage attendance'}</p>
 
         <form onSubmit={handleLogin} className={styles.formGroup}>
           <input 
             type="text" 
-            placeholder="Faculty Username (hint: faculty)" 
+            placeholder="Admin Username (hint: admin)" 
             className={styles.input}
             required
             value={formData.username}
@@ -44,14 +44,14 @@ export default function FacultyLogin() {
           />
           <input 
             type="password" 
-            placeholder="Password (hint: faculty123)" 
+            placeholder="Password (hint: admin123)" 
             className={styles.input}
             required
             value={formData.password}
             onChange={(e) => setFormData({...formData, password: e.target.value})}
           />
           <button type="submit" className={`btn btn-primary ${styles.scanBtn}`} style={{ background: '#e11d48' }}>
-            Login to Faculty Console
+            Login to Admin Console
           </button>
         </form>
       </div>

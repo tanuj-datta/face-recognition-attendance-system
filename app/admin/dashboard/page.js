@@ -21,12 +21,16 @@ const prisma = new PrismaClient();
 export default async function FacultyDashboard() {
   const session = await getServerSession(authOptions);
 
-  if (!session || session.user.role !== 'faculty') {
-    redirect('/faculty/login');
+  if (!session || session.user.role !== 'admin') {
+    redirect('/admin/login');
   }
 
   // Fetch Stats for Today
-  const todayDate = new Date().toISOString().split('T')[0];
+  const nowLocalDate = new Date();
+  const year = nowLocalDate.getFullYear();
+  const month = (nowLocalDate.getMonth() + 1).toString().padStart(2, '0');
+  const day = nowLocalDate.getDate().toString().padStart(2, '0');
+  const todayDate = `${year}-${month}-${day}`;
   
   const studentsCount = await prisma.student.count();
   const uniquePresentToday = await prisma.attendance.groupBy({
@@ -64,17 +68,17 @@ export default async function FacultyDashboard() {
     <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
         <div>
-          <h1 style={{ fontSize: '2.5rem', fontWeight: '800', marginBottom: '0.5rem' }}>Faculty Console</h1>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: '800', marginBottom: '0.5rem' }}>Admin Console</h1>
           <p style={{ color: 'var(--text-muted)' }}>Monitor student performance and session attendance.</p>
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
-          <Link href="/faculty/timetable" className="glass-button">
+          <Link href="/admin/timetable" className="glass-button">
             <Clock size={20} /> Slot Management
           </Link>
-          <Link href="/faculty/marks" className="glass-button">
+          <Link href="/admin/marks" className="glass-button">
             <GraduationCap size={20} /> Manage Marks
           </Link>
-          <Link href="/faculty/reports" className="glass-button" style={{ background: 'transparent', border: '1px solid var(--glass-border)' }}>
+          <Link href="/admin/reports" className="glass-button" style={{ background: 'transparent', border: '1px solid var(--glass-border)' }}>
             <FileText size={20} /> Attendance Reports
           </Link>
         </div>
@@ -176,7 +180,7 @@ export default async function FacultyDashboard() {
                   </span>
                 </td>
                 <td>
-                  <Link href={`/faculty/dashboard/student/${s.id}`} style={{ 
+                  <Link href={`/admin/dashboard/student/${s.id}`} style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
                     gap: '4px', 

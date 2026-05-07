@@ -47,10 +47,10 @@ export default function Home() {
 
         <div className="glass-panel stat-card" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', border: '1px solid var(--secondary)' }}>
           <ShieldCheck size={48} color="var(--secondary)" style={{ marginBottom: '1.5rem' }} />
-          <h2 style={{ marginBottom: '1rem' }}>Faculty Console</h2>
+          <h2 style={{ marginBottom: '1rem' }}>Admin Console</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '2rem' }}>Manage student marks, track daily attendance metrics, and view detailed academic reports.</p>
-          <Link href="/faculty/login" className="glass-button" style={{ width: '100%', justifyContent: 'center', background: 'transparent', border: '1px solid var(--secondary)' }}>
-            Faculty Login
+          <Link href="/admin/login" className="glass-button" style={{ width: '100%', justifyContent: 'center', background: 'transparent', border: '1px solid var(--secondary)' }}>
+            Admin Console Login
           </Link>
         </div>
       </div>

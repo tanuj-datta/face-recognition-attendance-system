@@ -28,7 +28,7 @@ export default function NewSession() {
   return (
     <div style={{ padding: '4rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '100vh' }}>
       <div style={{ width: '100%', maxWidth: '600px' }}>
-        <Link href="/faculty/dashboard" style={{ color: 'var(--text-muted)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2rem' }}>
+        <Link href="/admin/dashboard" style={{ color: 'var(--text-muted)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2rem' }}>
           <ArrowLeft size={16} /> Back to Dashboard
         </Link>
         
